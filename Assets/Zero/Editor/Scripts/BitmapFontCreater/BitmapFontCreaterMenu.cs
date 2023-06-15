@@ -39,13 +39,45 @@ namespace ZeroEditor
             for (var i = 0; i < files.Length; i++)
             {
                 var nameChars = Path.GetFileNameWithoutExtension(files[i]).ToCharArray();
+                // Debug.LogFormat("文件[{0}] name[{1}]", files[i], nameChars[0]);
                 if (nameChars.Length != 1)
                 {
                     Debug.LogErrorFormat("文件[{0}]被跳过，因为他的文件名不是单字符", files[i]);
                     continue;
                 }
 
-                textures.Add(AssetDatabase.LoadAssetAtPath<Texture2D>(files[i]));
+                Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(files[i]);
+
+                if (texture == null)
+                {
+                    // 如果文件名是 "..png"，则 AssetDatabase.LoadAssetAtPath 会加载不到图片资源。
+                    Debug.LogErrorFormat("加载图片 [{0}] 失败, 可能是文件名不合法", files[i]);
+
+                    string oldPath = files[i];
+                    string oldFilename = Path.GetFileName(oldPath);
+                    string newFilename = "_" + oldFilename;
+                    string newPath = oldPath.Replace(oldFilename, newFilename);
+                    Debug.LogWarningFormat("复制图片 [{0}] -> [{1}]...", oldPath, newPath);
+
+                    if (File.Exists(newPath))
+                    {
+                        Debug.LogErrorFormat("发现已有图片 [{0}]，先删除文件，再进行复制", newPath);
+                        File.Delete(newPath);
+                    }
+
+                    File.Copy(oldPath, newPath);
+                    AssetDatabase.Refresh();
+                    texture = AssetDatabase.LoadAssetAtPath<Texture2D>(newPath);
+
+                    if (texture == null)
+                    {
+                        Debug.LogErrorFormat("经过处理，加载图片 [{0}] 仍旧失败，跳过该文件", files[i]);
+                        continue;
+                    }
+                }
+
+                textures.Add(texture);
+
                 chars.Add(nameChars[0]);
             }
 

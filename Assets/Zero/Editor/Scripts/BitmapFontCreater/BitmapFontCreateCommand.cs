@@ -56,24 +56,17 @@ namespace ZeroEditor
         /// </summary>
         public void Execute()
         {
-            try
-            {
-                //删除旧文件
-                DeleteOldFiles();
-                //合并图集
-                BuildTextureAtlas();
+            //删除旧文件
+            DeleteOldFiles();
+            //合并图集
+            BuildTextureAtlas();
 
-                // 创建字体文本文件
-                BuildFontTextFormat();
-                // 注意顺序
+            // 创建字体文本文件
+            BuildFontTextFormat();
 
-                //创建字体
-                BuildFont();
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-            }
+            //创建字体
+            BuildFont();
+
 
             AssetDatabase.Refresh();
         }
@@ -161,7 +154,7 @@ page id=0 file="gift_num_0.png"
 chars count=14
 char id=48   x=65    y=0     width=12    height=17    xoffset=1     yoffset=9     xadvance=13    page=0  chnl=15
          */
-        private String BuildFontTextFormat()
+        private void BuildFontTextFormat()
         {
             string fontName = "Custom";
             string textureFilename = TextureAtlasFile;
@@ -220,21 +213,26 @@ char id=48   x=65    y=0     width=12    height=17    xoffset=1     yoffset=9   
 
             File.WriteAllText(FontFile, content);
             Debug.LogFormat("content:\n{0}", content);
-            return content;
         }
 
         void BuildTextureAtlas()
         {
             foreach (var t in Textures)
             {
+                if (t == null)
+                {
+                    Debug.LogErrorFormat(">>> find null texture, skip");
+                    continue;
+                }
+
                 var path = AssetDatabase.GetAssetPath(t);
+                // Debug.LogFormat(">>>>:[{0}] [{1}]", path, t?.name ?? "NULL");
                 var ti = AssetImporter.GetAtPath(path) as TextureImporter;
 
                 var isEdited = false;
 
                 //ti.textureType = TextureImporterType.Sprite;
 
-                Debug.LogFormat(">>>>:{0}", path);
                 if (ti.textureCompression != TextureImporterCompression.Uncompressed)
                 {
                     //有些图片压缩格式，没办法进行合并纹理
@@ -270,7 +268,7 @@ char id=48   x=65    y=0     width=12    height=17    xoffset=1     yoffset=9   
                 rect.height = rect.height * textureAtlas.height;
                 Rects[i] = rect;
 
-                Debug.LogFormat("字符: {0}  区域: {1}", Chars[i], rect.ToString());
+                // Debug.LogFormat("字符: {0}  区域: {1}", Chars[i], rect.ToString());
             }
 
             if (false == Directory.Exists(OutputPath))
