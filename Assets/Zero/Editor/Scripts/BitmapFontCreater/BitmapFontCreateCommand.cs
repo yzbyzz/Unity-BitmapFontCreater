@@ -195,7 +195,7 @@ char id=48   x=65    y=0     width=12    height=17    xoffset=1     yoffset=9   
                 sb.Append("char")
                     .Append(" id=").Append((int)chr)
                     .Append(" x=").Append(rect.x)
-                    // 从左下角计算的 x,y；fmt 中要从左上角计算 x,y；
+                    // 从左下角计算的 x,y；fnt 中要从左上角计算 x,y；
                     .Append(" y=").Append(TextureAtlas.height - rect.y - rect.height)
                     .Append(" width=").Append(rect.width)
                     .Append(" height=").Append(rect.height)
