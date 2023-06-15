@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -18,6 +19,8 @@ namespace ZeroEditor
 
         public Texture TextureAtlas { get; private set; }
 
+        // 字体文件（Cocos 中使用，Unity 中可用？）
+        public string FontFile { get; private set; }
 
         // 字体设置文件（Unity 中使用）
         public string FontSettingFile { get; private set; }
@@ -42,6 +45,7 @@ namespace ZeroEditor
             var outFileWithoutExt = Path.Combine(outputPath, fontName);
 
 
+            FontFile = outFileWithoutExt + ".fnt";
             FontSettingFile = outFileWithoutExt + ".fontsettings";
             TextureAtlasFile = outFileWithoutExt + ".png";
             MatFile = outFileWithoutExt + ".mat";
@@ -58,6 +62,11 @@ namespace ZeroEditor
                 DeleteOldFiles();
                 //合并图集
                 BuildTextureAtlas();
+
+                // 创建字体文本文件
+                BuildFontTextFormat();
+                // 注意顺序
+
                 //创建字体
                 BuildFont();
             }
@@ -74,6 +83,11 @@ namespace ZeroEditor
             if (File.Exists(TextureAtlasFile))
             {
                 File.Delete(TextureAtlasFile);
+            }
+
+            if (File.Exists(FontFile))
+            {
+                File.Delete(FontFile);
             }
 
             if (File.Exists(FontSettingFile))
@@ -140,6 +154,75 @@ namespace ZeroEditor
             AssetDatabase.SaveAssets();
         }
 
+        /*
+info face="Noto Sans SC Black" size=32 bold=1 italic=0 charset="" unicode=1 stretchH=100 smooth=1 aa=1 padding=0,0,0,0 spacing=1,1 outline=0
+common lineHeight=32 base=26 scaleW=128 scaleH=64 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0
+page id=0 file="gift_num_0.png"
+chars count=14
+char id=48   x=65    y=0     width=12    height=17    xoffset=1     yoffset=9     xadvance=13    page=0  chnl=15
+         */
+        private String BuildFontTextFormat()
+        {
+            string fontName = "Custom";
+            string textureFilename = TextureAtlasFile;
+            int fontSize = 50;
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append("info")
+                .Append(" face=\"").Append(fontName).Append("\"")
+                .Append(" size=").Append(fontSize)
+                .Append(" bold=").Append(1)
+                .Append(" italic=").Append(0)
+                .Append(" charset=\"\"")
+                .Append(" unicode=").Append(1)
+                .Append(" stretchH=100 smooth=1 aa=1 padding=0,0,0,0 spacing=1,1 outline=0")
+                .Append("\n")
+                ;
+            sb.Append("common")
+                .Append(" lineHeight=").Append(fontSize)
+                .Append(" base=26 scaleW=128 scaleH=64 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0")
+                .Append("\n")
+                ;
+
+            sb.Append("page id=0")
+                .Append(" file=\"").Append(textureFilename).Append("\"")
+                .Append("\n")
+                ;
+            sb.Append("chars")
+                .Append(" count=").Append(Rects.Length)
+                .Append("\n")
+                ;
+            Debug.LogFormat("Rects:{0} font.characterInfo:{1}"
+                , Rects.Length, Chars.Length);
+            for (int i = 0; i < Rects.Length && i < Chars.Length; i++)
+            {
+                Rect rect = Rects[i];
+                char chr = Chars[i];
+
+                sb.Append("char")
+                    .Append(" id=").Append((int)chr)
+                    .Append(" x=").Append(rect.x)
+                    // 从左下角计算的 x,y；fmt 中要从左上角计算 x,y；
+                    .Append(" y=").Append(TextureAtlas.height - rect.y - rect.height)
+                    .Append(" width=").Append(rect.width)
+                    .Append(" height=").Append(rect.height)
+                    .Append(" xoffset=").Append(0)
+                    .Append(" yoffset=").Append(0)
+                    .Append(" xadvance=").Append(rect.width)
+                    .Append(" page=").Append(0)
+                    .Append(" chnl=").Append(0)
+                    .Append(" letter=\"").Append(chr).Append("\"")
+                    .Append("\n")
+                    ;
+            }
+
+            string content = sb.ToString();
+
+            File.WriteAllText(FontFile, content);
+            Debug.LogFormat("content:\n{0}", content);
+            return content;
+        }
+
         void BuildTextureAtlas()
         {
             foreach (var t in Textures)
@@ -151,6 +234,7 @@ namespace ZeroEditor
 
                 //ti.textureType = TextureImporterType.Sprite;
 
+                Debug.LogFormat(">>>>:{0}", path);
                 if (ti.textureCompression != TextureImporterCompression.Uncompressed)
                 {
                     //有些图片压缩格式，没办法进行合并纹理
@@ -186,7 +270,7 @@ namespace ZeroEditor
                 rect.height = rect.height * textureAtlas.height;
                 Rects[i] = rect;
 
-                //Debug.LogFormat("字符: {0}  区域: {1}", Chars[i], rect.ToString());
+                Debug.LogFormat("字符: {0}  区域: {1}", Chars[i], rect.ToString());
             }
 
             if (false == Directory.Exists(OutputPath))
