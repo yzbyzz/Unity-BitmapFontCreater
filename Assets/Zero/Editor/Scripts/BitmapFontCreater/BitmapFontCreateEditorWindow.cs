@@ -17,8 +17,7 @@ namespace ZeroEditor
             return GetWindow<BitmapFontCreateEditorWindow>("Bitmap Font Creater");
         }
 
-        [SerializeField]
-        public List<Texture2D> textures = new List<Texture2D>();
+        [SerializeField] public List<Texture2D> textures = new List<Texture2D>();
 
         public string charContent;
 
@@ -55,7 +54,8 @@ namespace ZeroEditor
             EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(_assetLstProperty, true);
             if (EditorGUI.EndChangeCheck())
-            {//提交修改
+            {
+                //提交修改
                 _serializedObject.ApplyModifiedProperties();
             }
 
@@ -83,13 +83,14 @@ namespace ZeroEditor
                     outputPath = "Assets/";
                 }
             }
+
             GUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("创建"))
             {
-                var chars = charContent.Replace("\n", ""); 
+                var chars = charContent.Replace("\n", "");
 
                 if (textures.Count == 0)
                 {
@@ -103,13 +104,13 @@ namespace ZeroEditor
                     return;
                 }
 
-                if(textures.Count != chars.Length)
+                if (textures.Count != chars.Length)
                 {
                     Debug.LogErrorFormat("PNG数量和字符数量不一致!");
                     return;
-                }        
-                
-                if(string.IsNullOrWhiteSpace(outputPath))
+                }
+
+                if (string.IsNullOrWhiteSpace(outputPath))
                 {
                     Debug.LogErrorFormat("输出路径未选择!");
                     return;
@@ -123,6 +124,7 @@ namespace ZeroEditor
 
                 new BitmapFontCreateCommand(textures.ToArray(), chars.ToCharArray(), outputPath, fontName).Execute();
             }
+
             GUILayout.EndHorizontal();
 
             EditorGUILayout.Space();

@@ -85,7 +85,7 @@ namespace ZeroEditor
             //找到所有的图片
             var files = Directory.GetFiles(path, "*.png", SearchOption.TopDirectoryOnly);
 
-            if(chars.Length != files.Length)
+            if (chars.Length != files.Length)
             {
                 Debug.LogErrorFormat("PNG文件数量({0})和字符数量({1})不一致，请确定两者一致避免出错!", files.Length, chars.Length);
                 return;
@@ -93,10 +93,10 @@ namespace ZeroEditor
 
             Texture2D[] textures = new Texture2D[files.Length];
 
-            for(var i = 0; i < files.Length; i++)
+            for (var i = 0; i < files.Length; i++)
             {
                 textures[i] = AssetDatabase.LoadAssetAtPath<Texture2D>(files[i]);
-            }            
+            }
 
             new BitmapFontCreateCommand(textures, chars, path, dirObj.name).Execute();
         }
@@ -106,7 +106,7 @@ namespace ZeroEditor
         /// </summary>
         [MenuItem("Assets/Zero/Create Bitmap Font (GUI)", false, 1)]
         static void CreateBitmapFontGUI()
-        {            
+        {
             var editorWin = BitmapFontCreateEditorWindow.Open();
 
             if (Selection.objects.Length > 1 || Selection.objects[0] is Texture2D)
@@ -119,7 +119,7 @@ namespace ZeroEditor
                     }
                 }
             }
-            else if(Selection.objects.Length == 1)
+            else if (Selection.objects.Length == 1)
             {
                 var obj = Selection.objects[0];
                 var path = AssetDatabase.GetAssetPath(obj);
@@ -128,7 +128,7 @@ namespace ZeroEditor
                     editorWin.outputPath = path;
                     editorWin.fontName = obj.name;
                     //找到所有的图片
-                    var files = Directory.GetFiles(path, "*.png", SearchOption.TopDirectoryOnly);                                        
+                    var files = Directory.GetFiles(path, "*.png", SearchOption.TopDirectoryOnly);
                     List<char> chars = new List<char>();
                     for (var i = 0; i < files.Length; i++)
                     {
@@ -137,6 +137,7 @@ namespace ZeroEditor
                         {
                             chars.Add(nameChars[0]);
                         }
+
                         editorWin.textures.Add(AssetDatabase.LoadAssetAtPath<Texture2D>(files[i]));
                     }
 
@@ -146,14 +147,14 @@ namespace ZeroEditor
                     {
                         //如果目录中有「chars.txt」文件，则提取字符填入   
                         string charsContent = File.ReadAllText(charsTxtFile);
-                        editorWin.charContent = charsContent;                        
+                        editorWin.charContent = charsContent;
                     }
                     else
                     {
-                        editorWin.charContent = new string(chars.ToArray());                                                
+                        editorWin.charContent = new string(chars.ToArray());
                     }
                 }
-            }          
+            }
         }
 
         [MenuItem("Tools/Zero/Create Bitmap Font", false, 1)]

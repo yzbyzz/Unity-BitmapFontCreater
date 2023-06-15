@@ -18,20 +18,19 @@ namespace ZeroEditor
 
         public Texture TextureAtlas { get; private set; }
 
+
+        // 字体设置文件（Unity 中使用）
         public string FontSettingFile { get; private set; }
+
+        // 贴图文件
         public string TextureAtlasFile { get; private set; }
+
+        // 材质文件
         public string MatFile { get; private set; }
 
         public BitmapFontCreateCommand(Texture2D[] textures, string charContent, string outputPath, string fontName)
+            : this(textures, charContent.ToCharArray(), outputPath, fontName)
         {
-            Textures = textures;
-            Chars = charContent.ToCharArray();
-            OutputPath = outputPath;
-            FontName = fontName;
-            var outFileWithoutExt = Path.Combine(outputPath, fontName);
-            FontSettingFile = outFileWithoutExt + ".fontsettings";
-            TextureAtlasFile = outFileWithoutExt + ".png";
-            MatFile = outFileWithoutExt + ".mat";
         }
 
         public BitmapFontCreateCommand(Texture2D[] textures, char[] chars, string outputPath, string fontName)
@@ -41,6 +40,8 @@ namespace ZeroEditor
             OutputPath = outputPath;
             FontName = fontName;
             var outFileWithoutExt = Path.Combine(outputPath, fontName);
+
+
             FontSettingFile = outFileWithoutExt + ".fontsettings";
             TextureAtlasFile = outFileWithoutExt + ".png";
             MatFile = outFileWithoutExt + ".mat";
@@ -60,7 +61,7 @@ namespace ZeroEditor
                 //创建字体
                 BuildFont();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.LogError(e);
             }
@@ -115,10 +116,14 @@ namespace ZeroEditor
                 float pivot = -lineSpace / 2;
                 //pivot = 0;
                 int offsetY = (int)(pivot + (lineSpace - rect.height) / 2);
-                info.uvBottomLeft = new Vector2((float)rect.x / TextureAtlas.width, (float)(rect.y) / TextureAtlas.height);
-                info.uvBottomRight = new Vector2((float)(rect.x + rect.width) / TextureAtlas.width, (float)(rect.y) / TextureAtlas.height);
-                info.uvTopLeft = new Vector2((float)rect.x / TextureAtlas.width, (float)(rect.y + rect.height) / TextureAtlas.height);
-                info.uvTopRight = new Vector2((float)(rect.x + rect.width) / TextureAtlas.width, (float)(rect.y + rect.height) / TextureAtlas.height);
+                info.uvBottomLeft =
+                    new Vector2((float)rect.x / TextureAtlas.width, (float)(rect.y) / TextureAtlas.height);
+                info.uvBottomRight = new Vector2((float)(rect.x + rect.width) / TextureAtlas.width,
+                    (float)(rect.y) / TextureAtlas.height);
+                info.uvTopLeft = new Vector2((float)rect.x / TextureAtlas.width,
+                    (float)(rect.y + rect.height) / TextureAtlas.height);
+                info.uvTopRight = new Vector2((float)(rect.x + rect.width) / TextureAtlas.width,
+                    (float)(rect.y + rect.height) / TextureAtlas.height);
                 info.minX = 0;
                 info.minY = -(int)rect.height - offsetY;
                 info.maxX = (int)rect.width;
@@ -127,10 +132,10 @@ namespace ZeroEditor
                 characterInfos[i] = info;
             }
 
-            font.characterInfo = characterInfos;            
+            font.characterInfo = characterInfos;
 
             AssetDatabase.CreateAsset(mat, MatFile);
-            AssetDatabase.CreateAsset(font, FontSettingFile);            
+            AssetDatabase.CreateAsset(font, FontSettingFile);
             EditorUtility.SetDirty(font);
             AssetDatabase.SaveAssets();
         }
@@ -149,7 +154,7 @@ namespace ZeroEditor
                 if (ti.textureCompression != TextureImporterCompression.Uncompressed)
                 {
                     //有些图片压缩格式，没办法进行合并纹理
-                    ti.textureCompression = TextureImporterCompression.Uncompressed;                    
+                    ti.textureCompression = TextureImporterCompression.Uncompressed;
                     isEdited = true;
                 }
 
